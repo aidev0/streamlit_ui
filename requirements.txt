@@ -1,0 +1,8 @@
+python-dotenv
+openai==1.17.1
+notebook
+notebook
+pandas
+pymongo
+pygwalker
+streamlit

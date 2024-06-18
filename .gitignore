@@ -1,0 +1,11 @@
+.idea/
+results/*
+.ipynb_checkpoints/*
+.env
+cookies.json
+*.csv
+s.txt
+.DS_Store
+*.ipynb
+results/campaign.json
+cookies*.json
