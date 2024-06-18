@@ -5,9 +5,6 @@ import pandas as pd
 import streamlit as st
 from pymongo import MongoClient
 
-from dotenv import load_dotenv
-load_dotenv()
-
 # Connect to MongoDB (update 'localhost' and '27017' with your MongoDB URI and port if needed)
 MONGO_DB_URL = os.environ.get('MONGO_DB_URL', 'mongodb://localhost:27017/')
 client = MongoClient(MONGO_DB_URL)
