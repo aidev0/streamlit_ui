@@ -4,6 +4,7 @@ from pygwalker.api.streamlit import StreamlitRenderer, init_streamlit_comm
 import pandas as pd
 import streamlit as st
 from pymongo import MongoClient
+from bson import ObjectId
 
 # Connect to MongoDB (update 'localhost' and '27017' with your MongoDB URI and port if needed)
 MONGO_DB_URL = os.environ.get('MONGO_DB_URL', 'mongodb://localhost:27017/')
@@ -25,9 +26,11 @@ init_streamlit_comm()
 def get_pyg_renderer() -> "StreamlitRenderer":
     st.text(st.query_params["campaign_id"])
     if "campaign_id" in st.query_params:
-        campaign = campaigns_collection.find_one({'_id': st.query_params["campaign_id"]})
-        if 'description' in campaign:
-            st.title(campaign['description'])
+        # convert to ObjectId
+        campaign_id = ObjectId(st.query_params["campaign_id"])
+        campaign = campaigns_collection.find_one({'_id': campaign_id})
+        if "description" in campaign.keys():
+            st.title(campaign["description"])
         else:
             st.title("Campaign Leads")
         leads = leads_collection.find({'campaign_id': st.query_params["campaign_id"]})
