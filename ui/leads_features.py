@@ -19,7 +19,7 @@ leads_collection = db.leads
 campaigns_collection = db.campaigns
 
 st.set_page_config(
-    page_title="Praisidio Email Campaign Leads",
+    page_title="Campaign Leads Dashboard",
     layout="wide"
 )
 
