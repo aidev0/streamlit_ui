@@ -11,7 +11,7 @@ client = MongoClient(MONGO_DB_URL)
 database_name = os.environ.get('DATABASE_NAME', 'vida_ai')
 db = client[database_name]  # Replace 'your_database_name' with the name of your database
 leads_collection = db.leads  # Assuming the MongoDB collection is named 'leads'
-
+campaigns_collection = db.campaigns
 
 st.set_page_config(
     page_title="Praisidio Email Campaign Leads",
@@ -19,13 +19,17 @@ st.set_page_config(
 )
 
 init_streamlit_comm()
-st.title("Praisidio Email Campaign Leads")
 
 
 @st.cache_resource
 def get_pyg_renderer() -> "StreamlitRenderer":
     st.text(st.query_params["campaign_id"])
     if "campaign_id" in st.query_params:
+        campaign = campaigns_collection.find_one({'_id': st.query_params["campaign_id"]})
+        if 'description' in campaign:
+            st.title(campaign['description'])
+        else:
+            st.title("Campaign Leads")
         leads = leads_collection.find({'campaign_id': st.query_params["campaign_id"]})
         df = pd.DataFrame(leads)
     else:
