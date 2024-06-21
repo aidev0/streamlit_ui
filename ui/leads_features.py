@@ -6,6 +6,9 @@ import streamlit as st
 from pymongo import MongoClient
 from bson import ObjectId
 
+from dotenv import load_dotenv
+load_dotenv()
+
 # Connect to MongoDB (update 'localhost' and '27017' with your MongoDB URI and port if needed)
 MONGO_DB_URL = os.environ.get('MONGO_DB_URL', 'mongodb://localhost:27017/')
 client = MongoClient(MONGO_DB_URL)
@@ -29,7 +32,7 @@ def get_pyg_renderer() -> "StreamlitRenderer":
         # convert to ObjectId
         campaign_id = ObjectId(st.query_params["campaign_id"])
         campaign = campaigns_collection.find_one({'_id': campaign_id})
-        if "description" in campaign.keys():
+        if campaign and "description" in campaign.keys():
             st.title(campaign["description"])
         else:
             st.title("Campaign Leads")
