@@ -1,20 +1,21 @@
 import os
-
-from pygwalker.api.streamlit import StreamlitRenderer, init_streamlit_comm
+import requests
 import pandas as pd
 import streamlit as st
+from pygwalker.api.streamlit import StreamlitRenderer
 from pymongo import MongoClient
 from bson import ObjectId
-
 from dotenv import load_dotenv
+
 load_dotenv()
 
-# Connect to MongoDB (update 'localhost' and '27017' with your MongoDB URI and port if needed)
+# Connect to MongoDB
 MONGO_DB_URL = os.environ.get('MONGO_DB_URL', 'mongodb://localhost:27017/')
 client = MongoClient(MONGO_DB_URL)
 database_name = os.environ.get('DATABASE_NAME', 'vida_ai')
-db = client[database_name]  # Replace 'your_database_name' with the name of your database
-leads_collection = db.leads  # Assuming the MongoDB collection is named 'leads'
+
+db = client[database_name]
+leads_collection = db.leads
 campaigns_collection = db.campaigns
 
 st.set_page_config(
@@ -22,27 +23,32 @@ st.set_page_config(
     layout="wide"
 )
 
-init_streamlit_comm()
+
+def fetch_data(campaign_id):
+    campaign_leads_url = f"https://salty-cove-64673-5fe07b0600ae.herokuapp.com/api/data/leads_features/{campaign_id}"
+    response = requests.get(campaign_leads_url)
+    if response.status_code == 200:
+        data = response.json()
+    else:
+        st.error(f"Failed to retrieve data. Status Code: {response.status_code}")
+        data = [{'status': 'failed'}]
+    return pd.DataFrame(data)
 
 
-@st.cache_resource
-def get_pyg_renderer() -> "StreamlitRenderer":
-    st.text(st.query_params["campaign_id"])
+def get_renderer():
     if "campaign_id" in st.query_params:
-        # convert to ObjectId
-        campaign_id = ObjectId(st.query_params["campaign_id"])
-        campaign = campaigns_collection.find_one({'_id': campaign_id})
-        if campaign and "description" in campaign.keys():
-            st.title(campaign["description"])
+        campaign_id = st.query_params["campaign_id"]
+        df = fetch_data(campaign_id)
+        campaign = campaigns_collection.find_one({'_id': ObjectId(campaign_id)})
+        if campaign:
+            st.title(campaign.get("description", "Campaign Leads"))
         else:
             st.title("Campaign Leads")
-        leads = leads_collection.find({'campaign_id': st.query_params["campaign_id"]})
-        df = pd.DataFrame(leads)
     else:
-        df = pd.DataFrame([{'x': 0}])
-        # df = pd.read_json("results/all_features_2024-06-11 21:51:45.121445.json")
+        df = pd.DataFrame([{'status': 'failed'}])
+        st.title("No Campaign Selected")
     return StreamlitRenderer(df)
 
 
-renderer = get_pyg_renderer()
+renderer = get_renderer()
 renderer.explorer()
